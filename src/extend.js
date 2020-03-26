@@ -71,7 +71,7 @@ class RouterContext {
 
 
 /**
- * @param {function(!Object, function(): ?): void} handler
+ * @param {function(!RouterContext): void} handler
  * @param {!Window} w
  */
 export default function extend(handler, {validate, firstRun}, w = window) {
