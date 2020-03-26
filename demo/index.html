@@ -1,0 +1,44 @@
+<script type="module">
+
+import {listen} from '../min.js';
+
+async function listener(context) {
+
+  // TODO: do a bunch of ajax loading stuffs
+
+  console.debug("Waiting 1s before running...");
+  await new Promise((r) => window.setTimeout(r, 1000));
+
+
+
+//  context.pathname += '/hello';
+
+  context.url = new URL("http://not-us-com/fake/");
+
+  context.ready(() => {
+    console.info("preparing page", window.location.pathname);
+  });
+
+  await new Promise((r) => window.setTimeout(r, 100));
+}
+
+listen(listener, {firstRun: false});
+
+</script>
+
+<a href="/foo?zing#hello">Foo</a>
+<a href="/bar">Bar</a>
+<a href="#hello">#hello link</a>
+<a href="/foo/ignored.url">Ignored URL</a>
+<a href="https://example.com">External URL</a>
+<a href="/demo" target="_blank">Open in new tab</a>
+
+<div style="height: 800px; border-left: 2px solid blue;">
+</div>
+
+<div id="hello">
+  Hello!
+</div>
+
+<div style="height: 800px; border-left: 2px solid red;">
+</div>
