@@ -9,7 +9,7 @@
  * @param {string|!URL|!HTMLHyperlinkElementUtils|!Location} urlLike URL-like object
  * @return {string} origin or blank for invalid/bad
  */
-export function originFrom(urlLike) {
+export function originFrom(urlLike, l = window.location) {
   if (typeof urlLike === 'string') {
     urlLike = new URL(urlLike, location);
   }
@@ -30,11 +30,11 @@ export function originFrom(urlLike) {
 
 /**
  * @param {string|!URL|!HTMLHyperlinkElementUtils|!Location} a URL-like object
- * @param {string|!URL|!HTMLHyperlinkElementUtils|!Location=} b URL-like object
+ * @param {!URL|!HTMLHyperlinkElementUtils|!Location=} b URL-like object
  * @return {boolean} whether these have the same origin
  */
 export function sameOrigin(a, b = window.location) {
-  return originFrom(a) === originFrom(b);
+  return originFrom(a, b) === originFrom(b);
 }
 
 

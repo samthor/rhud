@@ -86,12 +86,12 @@ export default function extend(handler, {validate, firstRun}, w = window) {
       // ignore, checking is done in click handler
     } else if (isNavigation) {
       // If this doesn't pass validation, instruct the browser to change URLs right away.
-      if (!sameOrigin(url) || !safeUserValidate(url)) {
+      if (!sameOrigin(url, w.location) || !safeUserValidate(url)) {
         w.location.href = url;
         return Promise.reject();
       }
       // If it's a hash change triggered by code, just scroll to it.
-      if (isNavigationHash(url)) {
+      if (isNavigationHash(url, w.location)) {
         scrollToHash(url.hash);
         w.history.pushState(null, null, url);
         return Promise.resolve();
@@ -130,6 +130,8 @@ export default function extend(handler, {validate, firstRun}, w = window) {
       });
     });
 
+    // We don't really expose this Promise anywhere, so navigation requests go into the void,
+    // although that's probably fine as we reload an updated URL on actual failure.
     return Promise.resolve(handler(context))
         .then(() => context.ready())
         .catch((err) => {
@@ -150,7 +152,7 @@ export default function extend(handler, {validate, firstRun}, w = window) {
 
   w.addEventListener('click', buildClickHandler((url) => {
     // If this fails validation or is a hash on the same page, let the browser do it.
-    if (!sameOrigin(url) || isNavigationHash(url) || !safeUserValidate(url)) {
+    if (!sameOrigin(url, w.location) || isNavigationHash(url, w.location) || !safeUserValidate(url)) {
       return false;
     }
     routingHandler(url, true);
