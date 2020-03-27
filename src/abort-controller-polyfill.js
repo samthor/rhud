@@ -27,7 +27,7 @@ export class AbortControllerPolyfill {
       aborted = true;
 
       // Create a fake event with target/currentTarget.
-      const event = new CustomEvent('abort');
+      const event = new Event('abort');
       const sv = {value: signal};
       Object.defineProperties(event, {target: sv, currentTarget: sv});
 
