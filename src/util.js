@@ -9,7 +9,7 @@
  * @param {string|!URL|!HTMLHyperlinkElementUtils|!Location} urlLike URL-like object
  * @return {string} origin or blank for invalid/bad
  */
-export function originFrom(urlLike, l = window.location) {
+export function originFrom(urlLike, l = location) {
   if (typeof urlLike === 'string') {
     urlLike = new URL(urlLike, location);
   }
@@ -33,7 +33,7 @@ export function originFrom(urlLike, l = window.location) {
  * @param {!URL|!HTMLHyperlinkElementUtils|!Location=} b URL-like object
  * @return {boolean} whether these have the same origin
  */
-export function sameOrigin(a, b = window.location) {
+export function sameOrigin(a, b = location) {
   return originFrom(a, b) === originFrom(b);
 }
 
@@ -43,7 +43,7 @@ export function sameOrigin(a, b = window.location) {
  * @param {!Location=} l to check
  * @return {boolean} whether this is a pure hash navigation
  */
-export function isNavigationHash(target, l = window.location) {
+export function isNavigationHash(target, l = location) {
   return target.hash && target.pathname + target.search === l.pathname + l.search;
 }
 

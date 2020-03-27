@@ -18,7 +18,7 @@ class RouterContext {
     let readyRun = false;
     let readyResult = undefined;
 
-    Object.defineProperties(this, {
+    const config = {
       signal: {value: signal},
       firstRun: {value: firstRun},
       isNavigation: {value: isNavigation},
@@ -39,33 +39,14 @@ class RouterContext {
           this.url = new URL(v, this.url);
         },
       },
+    };
+
+    ['pathname', 'search', 'hash'].forEach((k) => {
+      config[k] = {get: () => url[k], set: (v) => urk[k] = v};
     });
 
+    Object.defineProperties(this, config);
     Object.seal(this);
-  }
-
-  get pathname() {
-    return this.url.pathname;
-  }
-
-  set pathname(v) {
-    this.url.pathname = v;
-  }
-
-  get search() {
-    return this.url.search;
-  }
-
-  set search(v) {
-    this.url.search = v;
-  }
-
-  get hash() {
-    return this.url.hash;
-  }
-
-  set hash(v) {
-    this.url.hash = v;
   }
 }
 

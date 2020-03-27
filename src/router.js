@@ -1,6 +1,6 @@
 import extend from './extend.js';
 
-let globalHandler = (url) => window.location.href = url || window.location.href;
+let globalHandler = (url) => location.href = url || location.href;
 
 // The default validator allows any URL that does not contain "." (except for a trailing ".html").
 const defaultValidateRe = /^[^.]*(\.html|)$/;
@@ -32,7 +32,7 @@ export function listen(handler, options = {}) {
  * @param {string|!URL} raw
  */
 export function route(raw) {
-  const url = new URL(raw, window.location);
+  const url = new URL(raw, location);
   globalHandler(url);
 }
 

@@ -1,4 +1,4 @@
-export class AbortSignalPolyfill {}
+class AbortSignalPolyfill {}
 
 /**
  * An incredibly simple AbortController polyfill. Does not actually abort in-flight fetch()
@@ -7,7 +7,6 @@ export class AbortSignalPolyfill {}
 export class AbortControllerPolyfill {
   constructor() {
     let aborted = false;
-    let namedHandler = null;
     const handlers = [];
 
     const signal = new AbortSignalPolyfill();
@@ -15,14 +14,9 @@ export class AbortControllerPolyfill {
       get aborted() {
         return aborted;
       },
-      get onabort() {
-        return namedHandler;
-      },
-      set onabort(v) {
-        namedHandler = v;
-      },
+      onabort: null,
       addEventListener(name, fn) {
-        if (!aborted && name === "abort") {
+        if (!aborted && name === 'abort') {
           handlers.push(fn);
         }
       },
@@ -33,13 +27,12 @@ export class AbortControllerPolyfill {
       aborted = true;
 
       // Create a fake event with target/currentTarget.
-      const event = new CustomEvent("abort");
-      Object.defineProperty(event, 'target', {value: signal});
-      Object.defineProperty(event, 'currentTarget', {value: signal});
+      const event = new CustomEvent('abort');
+      const sv = {value: signal};
+      Object.defineProperties(event, {target: sv, currentTarget: sv});
 
-      handlers.forEach((fn) => fn(event));
-      handlers.splice(0, handlers.length);
-      namedHandler && namedHandler(event);
+      handlers.splice(0, handlers.length).forEach((fn) => fn(event));
+      signal.onabort && signal.onabort(event);
     };
     this.signal = signal;
   }
