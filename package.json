@@ -1,9 +1,23 @@
 {
+  "name": "rhud",
+  "version": "1.0.0",
+  "description": "Router",
+  "type": "module",
+  "main": "dist/index.js",
+  "repository": "git@github.com:samthor/rhud.git",
+  "author": "Sam Thorogood <sam.thorogood@gmail.com>",
+  "license": "Apache-2.0",
   "devDependencies": {
-    "rollup": "^2.2.0",
-    "terser": "^4.6.7",
     "chai": "^4.2.0",
-    "mocha": "^7.1.1"
+    "dhost": "^0.1.9",
+    "mocha": "^7.1.1",
+    "mocha-headless-server": "^0.1.4",
+    "puppeteer": "^2.1.1",
+    "rollup": "^2.2.0",
+    "terser": "^4.6.7"
   },
-  "type": "module"
+  "scripts": {
+    "prepare": "node build.js",
+    "test": "mocha-headless-server test.html"
+  }
 }
