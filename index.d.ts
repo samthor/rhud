@@ -15,6 +15,6 @@ export interface ListenOptions {
 
 export function listen(handler: (RouterContext) => void, options?: ListenOptions): void;
 
-export function route(string | URL): void;
+export function route(to: string | URL): void;
 
 export function reload(): void;
