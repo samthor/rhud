@@ -33,7 +33,7 @@ export function listen(handler, options = {}) {
  */
 export function route(raw) {
   const url = new URL(raw, location);
-  globalHandler(url);
+  return globalHandler(url);
 }
 
 
