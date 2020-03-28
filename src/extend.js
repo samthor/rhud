@@ -11,24 +11,35 @@ import {
  * Passed to user code to help load new pages.
  */
 class RouterContext {
-  constructor({url, state, signal, firstRun, isNavigation}, ready) {
+  constructor({url, history, signal, firstRun, isNavigation}, ready) {
     this.url = new URL(url);
-    this.state = state;
 
     let readyRun = false;
-    let readyResult = undefined;
+    let localState = null;
+    let attached = !isNavigation;  // we're only attached to state if this was back/forward
+
+    const detatch = () => {
+      if (attached) {
+        localState = history.state;
+      }
+      attached = false;
+    };
+    attached && signal.addEventListener('abort', detatch);
+
+    this.signal = signal;
+    this.firstRun = firstRun;
+    this.isNavigation = isNavigation;
 
     const config = {
-      signal: {value: signal},
-      firstRun: {value: firstRun},
-      isNavigation: {value: isNavigation},
       ready: {
         value: (readyHandler) => {
           if (readyRun || signal.aborted) {
-            return readyResult;
+            // Run the handler anyway.
+            return readyHandler && readyHandler();
           }
           readyRun = true;
-          return (readyResult = ready(this, readyHandler));
+          detatch();
+          return ready(this, readyHandler);
         },
       },
       href: {
@@ -39,10 +50,18 @@ class RouterContext {
           this.url = new URL(v, this.url);
         },
       },
+      state: {
+        get() {
+          return attached ? history.state : localState;
+        },
+        set(v) {
+          attached ? history.replaceState(v, null) : (localState = v);
+        },
+      },
     };
 
     ['pathname', 'search', 'hash'].forEach((k) => {
-      config[k] = {get: () => url[k], set: (v) => urk[k] = v};
+      config[k] = {get: () => this.url[k], set: (v) => this.url[k] = v};
     });
 
     Object.defineProperties(this, config);
@@ -52,7 +71,7 @@ class RouterContext {
 
 
 /**
- * @param {function(!RouterContext): void} handler
+ * @param {function(!RouterContext): *} handler
  * @param {!Window} w
  */
 export default function extend(handler, {validate, firstRun}, w = window) {
@@ -90,16 +109,19 @@ export default function extend(handler, {validate, firstRun}, w = window) {
 
     const context = new RouterContext({
       url,
-      state: isNavigation ? null : w.history.state,
+      history: w.history,
       signal: controller.signal,
       firstRun,
       isNavigation,
     }, (context, readyHandler) => {
       if (isNavigation) {
+        // This is a navigation, so it's a brand new state that we can just overwrite.
         w.history.pushState(context.state, null, context.href);
       } else {
-        // TODO: user might have already replaced state themselves
-        w.history.replaceState(context.state, null, context.href);
+        // We call replaceState in a history back/forward only because the site might have updated
+        // the href (odd but valid). Unlike the state itself, which is managed in RouterContext,
+        // the href is only set here since it's hard(TM) to observe site changes to the URL.
+        w.history.replaceState(w.history.state, null, context.href);
       }
       recentActive = w.location.pathname + w.location.search;
 
@@ -107,7 +129,7 @@ export default function extend(handler, {validate, firstRun}, w = window) {
       // Immediately after it's done (possibly after a Promise delay), optionally scroll to hash.
       const result = readyHandler && readyHandler();
       return optionalPromiseThen(result, () => {
-        isNavigation && scrollToHash(context.hash);
+        isNavigation && scrollToHash(context.hash, w.document);
       });
     });
 

@@ -11,7 +11,7 @@
  */
 export function originFrom(urlLike, l = location) {
   if (typeof urlLike === 'string') {
-    urlLike = new URL(urlLike, location);
+    urlLike = new URL(urlLike, l);
   }
   if (urlLike.origin) {
     // Very modern browsers: Chrome 32+, Safari 10+, etc.
@@ -84,20 +84,20 @@ export function buildClickHandler(route) {
 
 /**
  * @param {string} hash to scroll to
- * @param {number=} fallback scroll position to use as fallback
+ * @param {!Document=} d to operate on
  */
-export function scrollToHash(hash, fallback = 0) {
+export function scrollToHash(hash, d = document) {
   if (hash.startsWith("#")) {
     hash = hash.substr(1);
   }
   if (hash) {
-    const target = document.getElementById(hash);
+    const target = d.getElementById(hash);
     if (target) {
       target.scrollIntoView();
       return;
     }
   }
-  document.documentElement.scrollTop = fallback;
+  d.scrollingElement.scrollTop = 0;
 }
 
 
@@ -110,12 +110,13 @@ export function scrollToHash(hash, fallback = 0) {
  * @return {!Promise<T>|T} ret
  */
 export function optionalPromiseThen(check, runnable) {
+  const internal = (v) => {
+    runnable && runnable();
+    return v;
+  };
   if (check instanceof Promise) {
-    return check.then((v) => {
-      runnable();
-      return v;
-    });
+    return check.then(internal);
   }
-  runnable();
+  internal();
   return check;
 }
