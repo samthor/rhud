@@ -1,3 +1,5 @@
+![Tests](https://github.com/samthor/rhud/workflows/Tests/badge.svg)
+
 Single-page-application router.
 Installs a global listener for all clicks on `<a href="...">`.
 
