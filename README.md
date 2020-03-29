@@ -1,4 +1,4 @@
-![Tests](https://github.com/samthor/rhud/workflows/Tests/badge.svg)
+[![Tests](https://github.com/samthor/rhud/workflows/Tests/badge.svg)](https://github.com/samthor/rhud/actions)
 
 Single-page-application router.
 Installs a global listener for all clicks on `<a href="...">`.
