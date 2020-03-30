@@ -260,6 +260,43 @@ suite('router', () => {
 
     assert.equal(w.history.state, 'fooB', 'updated state after Promise chain');
   });
+
+  test('abort', async () => {
+    const linkA = createLink('/fooA');
+    const linkB = createLink('/fooB');
+
+    let abortHandlerCalled = false;
+    const queue = attach({firstRun: false, validate: () => true});
+    const p = queue((context) => {
+      context.maybeAbort(() => {
+        abortHandlerCalled = true;
+        assert.fail('should not run, not yet aborted');
+      });
+
+      linkB.click();
+      assert.isTrue(context.signal.aborted);
+
+      context.maybeAbort(() => {
+        assert.isFalse(abortHandlerCalled, 'abort handler should not be called twice');
+        abortHandlerCalled = true;
+      });
+      assert.fail('should not get here');
+    });
+
+    let gotThrow = false;
+    linkA.click();
+    await p.then(() => {
+      assert.fail('should not get here, should throw');
+    }, (e) => {
+      gotThrow = true;
+      assert.instanceOf(e, DOMException);
+      assert.equal(e.name, 'AbortError');
+    });
+    assert.isTrue(abortHandlerCalled, 'handler must be called');
+    assert.isTrue(gotThrow, 'must throw AbortError');
+
+    await queue((context) => {});
+  });
 });
 
 mocha.run();

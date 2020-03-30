@@ -1,6 +1,7 @@
 [![Tests](https://github.com/samthor/rhud/workflows/Tests/badge.svg)](https://github.com/samthor/rhud/actions)
 
-Single-page-application router.
+Modern single-page-application router.
+~3.3kb compiled, 1.5kb gzipped.
 Installs a global listener for all clicks on `<a href="...">`.
 
 # Install
@@ -13,7 +14,7 @@ Includes TS types.
 At its simplest, use like so:
 
 ```js
-import {listen} from 'rhud';
+import {listen} from 'rhud';  // ESM only
 
 listen(async (context) => {
   const partial = await loadPartialFor(context.href);
@@ -23,7 +24,10 @@ listen(async (context) => {
 });
 ```
 
-This example will be called for every route (not those with "." in the URL, except ending with ".html").
+By default, the router will be triggered for every pathname, not those with "." in the URL, except ending with ".html".
+For example, "/foo/bar" or "/foo/bar/index.html" will match, but "/foo/bar/image.svg" will not.
+
+If the function you pass throws an error or returns a rejected `Promise`, the router will just load the page via the browser.
 
 ## Options
 
@@ -77,17 +81,22 @@ listen(async (context) => {
 
 If you're _not_ in navigation mode, this means the user has hit back or forward to change the URL.
 In this case, the URL has already changed when the method opens.
-You should aim to update the DOM _without_ doing any asynchronous calls, as the History API's default behavior is to scroll to the page after a frame.
+You should aim to update the DOM _without_ doing asynchronous calls, as the History API's default behavior is to scroll to the page after a frame—you ideally want your DOM to be ready immediately.
 
 ```js
 listen(async (context) => {
   if (context.isNavigation) {
-    // ignore
+    // as above, do long-lived tasks
   } else {
     // Get partial from cache if possible, but otherwise use network.
     // Avoid 'await'.
   }
 
+  context.ready(() => {
+    // You don't need to do work inside this block outside navigation mode (as
+    // the URL is already up-to-date), but you can still do updates here if it
+    // helps streamline your code.
+  });
   // as earlier
 });
 ```
@@ -98,4 +107,4 @@ You can save the scroll position when the listener runs, reset it after a frame,
 ## Requirements
 
 Uses `Promise` (but not `async` or `await`), so probably works on modern browsers.
-This includes a tiny `AbortSignal` and `AbortController` polyfill (as these are still fairly modern as of 2020).
+This includes a tiny `AbortSignal` and `AbortController` polyfill (as these are still fairly modern as of 2020), although these won't cancel a `fetch`—check the signal's status when it's important.

@@ -2,7 +2,7 @@
 /**
  * Context for a router page load.
  */
-export interface RouterContext {
+export class RouterContext {
   url: URL;
   state: any;
   firstRun: boolean;
@@ -15,13 +15,21 @@ export interface RouterContext {
   signal: AbortSignal;
 
   /**
+   * Aborts the listener method if we have been preempted by another route. This throws a caught
+   * Error if we're preempted, so execution won't continue.
+   *
+   * @param handler optional synchronous handler to call if this will throw
+   */
+  maybeAbort(handler?: () => void);
+
+  /**
    * Continues this page route: in navigation mode, this updates the URL and sets the scroll
    * position.
    *
    * @param readyHandler called between updating the URL and updating the scroll position
    */
-  ready(readyHandler: () => T): T;
-};
+  ready<T>(readyHandler?: () => T): T;
+}
 
 export interface ListenOptions {
 
@@ -37,7 +45,7 @@ export interface ListenOptions {
    * Should the router call the listener immediately?
    */
   firstRun?: boolean;
-};
+}
 
 /**
  * Sets up the router. Pass a listener for routing events and optional options.

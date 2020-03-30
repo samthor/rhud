@@ -67,6 +67,13 @@ class RouterContext {
     Object.defineProperties(this, config);
     Object.seal(this);
   }
+
+  maybeAbort(handler) {
+    if (this.signal.aborted) {
+      handler && handler();
+      throw new DOMException('', 'AbortError');
+    }
+  }
 }
 
 
