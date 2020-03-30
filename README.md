@@ -19,6 +19,8 @@ import {listen} from 'rhud';  // ESM only
 listen(async (context) => {
   const partial = await loadPartialFor(context.href);
   context.ready(() => {
+    // If the request was preempted (the user loaded a different page), this
+    // block won't run.
     updateDom(partial);
   });
 });
@@ -103,6 +105,23 @@ listen(async (context) => {
 
 There are mitigation strategies if back/forward requires a network request to display properly.
 You can save the scroll position when the listener runs, reset it after a frame, and then scroll to the intended position later.
+
+### Preempted Router
+
+You can check whether the router has been preempted (i.e., the user clicked a different link) by checking the `AbortSignal` on `RouterContext`, or call `.maybeAbort()` to just abandon early.
+For example:
+
+```js
+listen(async (context) => {
+  await longLivedTask(context.href);
+  if (context.signal.aborted) {
+    return;  // oh well
+  }
+  context.maybeAbort();  // or: throws an error if preempted
+});
+```
+
+⚠️ If the router has been preempted, then the function passed to `context.ready(() => ...)` will *not* run.
 
 ## Requirements
 

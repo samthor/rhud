@@ -233,7 +233,7 @@ suite('router', () => {
       const ret = context.ready(() => {
         return 123;
       });
-      assert.equal(ret, 123, 'ready method is still invoked even if aborted');
+      assert.equal(ret, undefined, 'ready method is not invoked if aborted');
       assert.isTrue(context.signal.aborted);
     });
     const p2 = queue((context) => {

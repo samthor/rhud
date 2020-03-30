@@ -33,7 +33,9 @@ class RouterContext {
     const config = {
       ready: {
         value: (readyHandler) => {
-          if (readyRun || signal.aborted) {
+          if (signal.aborted) {
+            return;
+          } else if (readyRun) {
             // Run the handler anyway.
             return readyHandler && readyHandler();
           }
