@@ -8,16 +8,12 @@
   "author": "Sam Thorogood <sam.thorogood@gmail.com>",
   "license": "Apache-2.0",
   "devDependencies": {
-    "chai": "^4.2.0",
-    "dhost": "^0.1.9",
-    "mocha": "^7.1.1",
-    "mocha-headless-server": "^0.1.4",
-    "puppeteer": "^2.1.1",
+    "headless-test": "^1.0.2",
     "rollup": "^2.2.0",
     "terser": "^4.6.7"
   },
   "scripts": {
     "prepare": "node build.js",
-    "test": "mocha-headless-server test.html"
+    "test": "headless-test test/suite.js"
   }
 }

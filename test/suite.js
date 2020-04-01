@@ -1,9 +1,8 @@
-import './node_modules/mocha/mocha.js';
-import './node_modules/chai/chai.js';
-import listen from './src/extend.js';
+import listen from '../src/extend.js';
 
-const {assert} = chai;
-mocha.setup({ ui: 'tdd' });
+document.head.append(Object.assign(document.createElement('style'), {
+  textContent: `iframe {visibility: hidden;}`,
+}));
 
 const micro = (x) => new Promise((r) => window.setTimeout(r, 0)).then(() => x);
 
@@ -12,14 +11,14 @@ suite('router', () => {
 
   setup(async () => {
     frame = document.createElement('iframe');
-    frame.src = new URL('test-blank.html', window.location);
-    const p = new Promise((r) => frame.addEventListener('load', r));
+    frame.src = new URL('/test/blank.html', window.location);
     document.body.append(frame);
-    await p;
+    await new Promise((r) => frame.addEventListener('load', r));
+    assert.equal(frame.contentDocument.readyState, 'complete');
   });
 
   teardown(() => {
-    frame.remove();
+    frame && frame.remove();
     frame = null;
   });
 
@@ -27,7 +26,7 @@ suite('router', () => {
     const calls = [];
     const pending = [];
 
-    teardown(() => {
+    suiteTeardown(async () => {
       assert.isEmpty(calls, `${calls.length} pending queued history events`);
       assert.isEmpty(pending, `${pending.length} pending handler calls`);
     });
@@ -84,6 +83,7 @@ suite('router', () => {
     largeEl.style.background = 'red';
     const anchorEl = document.createElement('a');
     anchorEl.id = 'foo';
+    anchorEl.textContent = 'hello';
     d.body.append(largeEl, anchorEl);
 
     // This implicitly checks the inverse queue logic of the test itself; we click _before_
@@ -298,5 +298,3 @@ suite('router', () => {
     await queue((context) => {});
   });
 });
-
-mocha.run();
