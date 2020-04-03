@@ -265,9 +265,20 @@ suite('router', () => {
     const linkA = createLink('/fooA');
     const linkB = createLink('/fooB');
 
+    let unhandledHandlerRun = false;
+    const unhandledHandler = (e) => {
+      assert.isFalse(unhandledHandlerRun, 'unhandled rejection handler should only run once');
+      unhandledHandlerRun = true;
+      e.preventDefault();
+    };
+    window.addEventListener('unhandledrejection', unhandledHandler, {once: true});
+    suiteTeardown(() => {
+      window.removeEventListener('unhandledrejection', unhandledHandler, {once: true});
+    });
+
     let abortHandlerCalled = false;
     const queue = attach({firstRun: false, validate: () => true});
-    const p = queue((context) => {
+    const p = queue(async (context) => {
       context.maybeAbort(() => {
         abortHandlerCalled = true;
         assert.fail('should not run, not yet aborted');
@@ -275,9 +286,11 @@ suite('router', () => {
 
       linkB.click();
       assert.isTrue(context.signal.aborted);
+      assert.isFalse(unhandledHandlerRun);
 
       context.maybeAbort(() => {
         assert.isFalse(abortHandlerCalled, 'abort handler should not be called twice');
+        assert.isFalse(unhandledHandlerRun);
         abortHandlerCalled = true;
       });
       assert.fail('should not get here');
@@ -294,6 +307,10 @@ suite('router', () => {
     });
     assert.isTrue(abortHandlerCalled, 'handler must be called');
     assert.isTrue(gotThrow, 'must throw AbortError');
+
+    assert.isFalse(unhandledHandlerRun);
+    await micro();
+    assert.isTrue(unhandledHandlerRun, 'unhandled handler should have run');
 
     await queue((context) => {});
   });
